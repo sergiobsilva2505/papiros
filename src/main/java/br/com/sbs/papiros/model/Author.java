@@ -1,6 +1,7 @@
 package br.com.sbs.papiros.model;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 public class Author {
 
@@ -36,7 +37,7 @@ public class Author {
     public String toString() {
         return "Author -> [" +
                 "email = '" + email + '\'' +
-                ", birthDate = " + birthDate +
+                ", birthDate = " + birthDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) +
                 ", name = '" + name + '\'' +
                 ", miniResume = '" + miniResume + '\'' +
                 ']';

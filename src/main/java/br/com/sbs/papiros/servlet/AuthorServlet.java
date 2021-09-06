@@ -1,5 +1,7 @@
 package br.com.sbs.papiros.servlet;
 
+import br.com.sbs.papiros.dao.AuthorsDao;
+import br.com.sbs.papiros.factory.ConnectionFactory;
 import br.com.sbs.papiros.model.Author;
 
 import javax.servlet.*;
@@ -8,28 +10,40 @@ import javax.servlet.annotation.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet(value = "/authors")
 public class AuthorServlet extends HttpServlet {
 
-    private List<Author> authors = new ArrayList<>();
+    private AuthorsDao authorsDao;
+
+    public AuthorServlet() {
+        this.authorsDao = new AuthorsDao(new ConnectionFactory().getConnection());
+    }
 
     @Override
-    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        Author monteiroLobato = new Author("monteiro.lobato@google.com", LocalDate.of(1882, 04, 18), "Monteiro Lobato", "Mini curriculo do Sr. Monteiro Lobato");
-        Author machadoDeAssis = new Author("machado.assis@google.com", LocalDate.of(1839, 06, 21), "Machado de Assis", "Mini curriculo do Sr. Machado de Assis");
-        authors.add(monteiroLobato);
-        authors.add(machadoDeAssis);
+        List<Author> authors = authorsDao.list();
 
         request.setAttribute("authors", authors);
         request.getRequestDispatcher("WEB-INF/views/authors.jsp").forward(request, response);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        String email = request.getParameter("email");
+        LocalDate birthDate = LocalDate.parse(request.getParameter("birthDate"), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String name = request.getParameter("name");
+        String miniResume = request.getParameter("miniResume");
+
+        Author author = new Author(email, birthDate, name, miniResume);
+        authorsDao.save(author);
+
+        response.sendRedirect("authors");
 
     }
 }
